@@ -37,7 +37,7 @@ def resolve_ticker(ticker):
 
 
 def display_ticker(ticker):
-    """Strip .TO suffix for cleaner display."""
+    # Strip .TO suffix for cleaner display
     if ticker.endswith(".TO"):
         # Get all characters except the last 3
         return ticker[:-3]
@@ -46,7 +46,7 @@ def display_ticker(ticker):
 
 
 def infer_currency(ticker):
-    """Guess currency from ticker: .TO / .F suffix → CAD, else → USD."""
+    # Guess currency from ticker: .TO / .F suffix → CAD, else → USD
     t = resolve_ticker(ticker.upper())
     if t.endswith(".TO") or t.endswith(".F"):
         return "CAD"
@@ -192,10 +192,8 @@ def breakdown_by_country(decomposed):
 
 
 def print_report(entries, portfolio, decomposed, sectors, countries, unknown, display_currency):
-    """
-    entries:   {ticker: (original_amount, original_currency)}
-    portfolio: {ticker: amount_in_display_currency}
-    """
+    # entries:   {ticker: (original_amount, original_currency)}
+    # portfolio: {ticker: amount_in_display_currency}
     ccy_label = "CAD" if display_currency == "CAD" else "USD"
     portfolio_total = sum(portfolio.values())
     total = sum(decomposed.values())
@@ -314,11 +312,9 @@ def print_report(entries, portfolio, decomposed, sectors, countries, unknown, di
 # ── Main ─────────────────────────────────────────────────────────────────────
 
 def get_portfolio_from_user():
-    """
-    Returns {ticker: (amount, currency)}.
-    Input format: TICKER AMOUNT [USD|CAD]
-    Currency is inferred from the ticker suffix if omitted.
-    """
+    # Returns {ticker: (amount, currency)}
+    # Input format: TICKER AMOUNT [USD|CAD]
+    # Currency is inferred from the ticker suffix if omitted
     print("\nEnter your portfolio.")
     print("Format: TICKER AMOUNT [USD|CAD]")
     print("  e.g.  VFV 5000 CAD   or   AAPL 1000 USD   or   VOO 3000")
