@@ -233,7 +233,7 @@ def print_report(entries, portfolio, decomposed, sectors, countries, unknown, di
         print(f"\n  WARNING — unrecognized tickers skipped: {unknown_str}")
 
     print("\n  Top Holdings")
-    print("  Ticker      Name                                    Amount         %")
+    print("  Ticker     Name                                        Amount           %")
     print("  " + "-" * 75)
     
     # Sort holdings by amount (highest first)
