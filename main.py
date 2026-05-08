@@ -16,41 +16,11 @@ STOCK_DATA = DATA["stocks"]
 # Update this rate as needed
 USDCAD = 1.3850
 
+# Only keep cross-ticker mappings where the input name differs from the actual ticker
 TICKER_ALIASES = {
-    "VFV": "VFV.TO",
-    "QQC": "QQC.F",
-    "XIU": "XIU.TO",
-    "XIC": "XIC.TO",
-    "VDY": "VDY.TO",
-    "QQQM": "QQQ",
-    "ZCN": "ZCN.TO",
-    "HXS": "HXS.TO",
-    "VEQT": "VEQT.TO",
-    "XEQT": "VEQT.TO",
-    "VGRO": "VGRO.TO",
-    "ZLB": "ZLB.TO",
-    "XEI": "XEI.TO",
-    "CNDX": "CNDX.TO",
-    "DMEU": "DMEU.TO",
-    "CUEI": "CUEI.TO",
-    "QAH": "QAH.TO",
-    "DMEC": "DMEC.TO",
-    "HEB": "HEB.TO",
-    "XBAL": "XBAL.TO",
-    "FEQT": "FEQT.TO",
-    "FGRO": "FGRO.TO",
-    "FBAL": "FBAL.TO",
-    "XDIV": "XDIV.TO",
-    "XGD": "XGD.TO",
-    "ZLU": "ZLU.TO",
-    "ZUQ": "ZUQ.TO",
-    "XRE": "XRE.TO",
-    "EQL": "EQL.TO",
-    "EQL.F": "EQL.F.TO",
-    "ITOT": "VTI",
-    "ZEQT": "ZEQT.TO",
-    "FCCM": "FCCM.TO",
-    "FINN": "FINN.TO",
+    "QQQM": "QQQ",       # User shortcut to US QQQ
+    "ITOT": "VTI",       # User shortcut to US VTI
+    "XEQT": "VEQT.TO",   # Alternative name for VEQT
 }
 
 
@@ -68,7 +38,11 @@ def resolve_ticker(ticker):
 
 def display_ticker(ticker):
     """Strip .TO suffix for cleaner display."""
-    return ticker[:-3] if ticker.endswith(".TO") else ticker
+    if ticker.endswith(".TO"):
+        # Get all characters except the last 3
+        return ticker[:-3]
+    else:
+        return ticker
 
 
 def infer_currency(ticker):
@@ -84,7 +58,9 @@ def convert_amount(amount, from_ccy, to_ccy):
         return amount
     if from_ccy == "USD" and to_ccy == "CAD":
         return amount * USDCAD
-    return amount / USDCAD
+    else:
+        # Convert from CAD to USD
+        return amount / USDCAD
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -103,11 +79,7 @@ def is_etf(ticker):
 
 
 def decompose_portfolio(portfolio, _depth=0):
-    """
-    portfolio: dict of {ticker: dollar_amount}
-    Returns a flat dict of {stock_ticker: dollar_exposure}.
-    Recursively decomposes ETF-of-ETFs up to depth 5.
-    """
+    # portfolio: dict of {ticker: dollar_amount} Returns a flat dict of {stock_ticker: dollar_exposure}. Recursively decomposes ETF-of-ETFs up to depth 5.
     if _depth > 5:
         return {}, []
 
@@ -133,12 +105,13 @@ def decompose_portfolio(portfolio, _depth=0):
                         {sub_ticker: sub_amount}, _depth + 1
                     )
                     for k, v in sub_result.items():
-                        result[k] += v
-                    unknown.extend(sub_unknown)
+                        result[k] = result[k] + v
+                    for item in sub_unknown:
+                        unknown.append(item)
                 else:
-                    result[sub_ticker] += sub_amount
+                    result[sub_ticker] = result[sub_ticker] + sub_amount
         else:
-            result[ticker] += amount
+            result[ticker] = result[ticker] + amount
 
     return dict(result), unknown
 
@@ -155,15 +128,67 @@ def get_stock_info(ticker):
 def breakdown_by_sector(decomposed):
     sectors = defaultdict(float)
     for ticker, amount in decomposed.items():
-        sectors[get_stock_info(ticker)["sector"]] += amount
-    return dict(sorted(sectors.items(), key=lambda x: x[1], reverse=True))
+        info = get_stock_info(ticker)
+        sector = info["sector"]
+        sectors[sector] = sectors[sector] + amount
+    
+    # Sort by amount (highest first) - manual sorting
+    sector_list = list(sectors.items())
+    
+    # Repeatedly find the item with highest amount and move it to sorted position
+    sorted_list = []
+    while sector_list:
+        highest_sector = None
+        highest_amount = -1
+        highest_index = -1
+        
+        for i in range(len(sector_list)):
+            sector, amount = sector_list[i]
+            if amount > highest_amount:
+                highest_amount = amount
+                highest_sector = sector
+                highest_index = i
+        
+        sorted_list.append((highest_sector, highest_amount))
+        sector_list.pop(highest_index)
+    
+    result = {}
+    for sector, amount in sorted_list:
+        result[sector] = amount
+    return result
 
 
 def breakdown_by_country(decomposed):
     countries = defaultdict(float)
     for ticker, amount in decomposed.items():
-        countries[get_stock_info(ticker)["country"]] += amount
-    return dict(sorted(countries.items(), key=lambda x: x[1], reverse=True))
+        info = get_stock_info(ticker)
+        country = info["country"]
+        countries[country] = countries[country] + amount
+    
+    # Sort by amount (highest first) - manual sorting
+    country_list = list(countries.items())
+    
+    # Repeatedly find the item with highest amount and move it to sorted position
+    sorted_list = []
+    while country_list:
+        highest_country = None
+        highest_amount = -1
+        highest_index = -1
+        
+        for i in range(len(country_list)):
+            country, amount = country_list[i]
+            if amount > highest_amount:
+                highest_amount = amount
+                highest_country = country
+                highest_index = i
+        
+        sorted_list.append((highest_country, highest_amount))
+        country_list.pop(highest_index)
+    
+    result = {}
+    for country, amount in sorted_list:
+        result[country] = amount
+    return result
 
 
 def print_report(entries, portfolio, decomposed, sectors, countries, unknown, display_currency):
@@ -180,56 +205,109 @@ def print_report(entries, portfolio, decomposed, sectors, countries, unknown, di
     print("=" * 62)
 
     print("\n  Input Portfolio")
-    print(f"  {'Ticker':<12} {'Type':<7} {'Amount':>14}  {'Original':>16}")
-    print(f"  {'-'*12} {'-'*7} {'-'*14}  {'-'*16}")
-    for ticker, (orig_amount, orig_ccy) in entries.items():
+    print("  " + "-" * 80)
+    
+    for ticker in entries:
+        orig_amount, orig_ccy = entries[ticker]
         label = "ETF" if is_etf(ticker) else "Stock"
         converted = portfolio[ticker]
         dticker = display_ticker(ticker)
+        
         if orig_ccy != display_currency:
             orig_note = f"{orig_amount:,.2f} {orig_ccy}"
         else:
             orig_note = ""
-        print(f"  {dticker:<12} {label:<7} {converted:>14,.2f}  {orig_note:>16}")
+        
+        print(f"  {dticker}  {label}  ${converted:,.2f}  {orig_note}")
 
     if display_currency == "CAD":
         print(f"  (1 USD = {USDCAD} CAD)")
     else:
-        print(f"  (1 CAD = {1/USDCAD:.4f} USD)")
+        rate_usd_per_cad = 1 / USDCAD
+        print(f"  (1 CAD = {rate_usd_per_cad:.4f} USD)")
 
     if unknown:
-        print(f"\n  WARNING — unrecognized tickers skipped: {', '.join(display_ticker(t) for t in unknown)}")
+        # Build list of unknown tickers to display
+        unknown_list = []
+        for t in unknown:
+            unknown_list.append(display_ticker(t))
+        unknown_str = ", ".join(unknown_list)
+        print(f"\n  WARNING — unrecognized tickers skipped: {unknown_str}")
 
-    print(f"\n  Top Holdings")
-    print(f"  {'Ticker':<10} {'Name':<40} {'Amount':>14}  {'%':>6}")
-    print(f"  {'-'*10} {'-'*40} {'-'*14}  {'-'*6}")
-    sorted_holdings = sorted(decomposed.items(), key=lambda x: x[1], reverse=True)
-    for ticker, amount in sorted_holdings[:20]:
+    print("\n  Top Holdings")
+    print("  Ticker      Name                                    Amount         %")
+    print("  " + "-" * 75)
+    
+    # Sort holdings by amount (highest first)
+    holding_list = list(decomposed.items())
+    sorted_holdings = []
+    while holding_list:
+        highest_ticker = None
+        highest_amount = -1
+        highest_index = -1
+        
+        for i in range(len(holding_list)):
+            ticker, amount = holding_list[i]
+            if amount > highest_amount:
+                highest_amount = amount
+                highest_ticker = ticker
+                highest_index = i
+        
+        sorted_holdings.append((highest_ticker, highest_amount))
+        holding_list.pop(highest_index)
+    
+    # Show top 20 holdings
+    for i in range(20):
+        if i >= len(sorted_holdings):
+            break
+        
+        ticker, amount = sorted_holdings[i]
         info = get_stock_info(ticker)
         pct = (amount / portfolio_total) * 100
-        print(f"  {display_ticker(ticker):<10} {info['name']:<40} {amount:>14,.2f}  {pct:>5.1f}%")
+        display_name = display_ticker(ticker)
+        stock_name = info['name']
+        
+        # Truncate name if too long
+        if len(stock_name) > 43:
+            stock_name = stock_name[:40] + "..."
+        
+        print(f"  {display_name:<10} {stock_name:<43} ${amount:>12,.2f}  {pct:>5.1f}%")
+    
     if len(sorted_holdings) > 20:
-        remaining = sum(v for _, v in sorted_holdings[20:])
-        print(f"  {'...':<10} {'(remaining holdings)':<40} {remaining:>14,.2f}  {(remaining/portfolio_total)*100:>5.1f}%")
+        remaining = 0
+        for i in range(20, len(sorted_holdings)):
+            _, amount = sorted_holdings[i]
+            remaining = remaining + amount
+        
+        remaining_pct = (remaining / portfolio_total) * 100
+        print(f"  {'...':<10} {'(remaining holdings)':<43} ${remaining:>12,.2f}  {remaining_pct:>5.1f}%")
 
-    BAR_WIDTH = 36
-    print(f"\n  Sector Breakdown")
+    BAR_WIDTH = 30
+    print("\n  Sector Breakdown")
     for sector, amount in sectors.items():
         pct = (amount / portfolio_total) * 100
-        bar = "█" * int(pct / 100 * BAR_WIDTH)
-        print(f"  {sector:<26} {bar:<{BAR_WIDTH}}  {pct:>5.1f}%")
+        bar_length = int(pct / 100 * BAR_WIDTH)
+        bar = "█" * bar_length
+        bar_padded = bar.ljust(BAR_WIDTH)
+        print(f"  {sector:<26} {bar_padded}  {pct:>5.1f}%")
 
-    print(f"\n  Geographic Breakdown")
+    print("\n  Geographic Breakdown")
     for country, amount in countries.items():
         pct = (amount / portfolio_total) * 100
-        bar = "█" * int(pct / 100 * BAR_WIDTH)
-        print(f"  {country:<26} {bar:<{BAR_WIDTH}}  {pct:>5.1f}%")
+        bar_length = int(pct / 100 * BAR_WIDTH)
+        bar = "█" * bar_length
+        bar_padded = bar.ljust(BAR_WIDTH)
+        print(f"  {country:<26} {bar_padded}  {pct:>5.1f}%")
 
     coverage = (total / portfolio_total * 100) if portfolio_total else 0
-    print(f"\n  Total:      {portfolio_total:>14,.2f} {ccy_label}")
-    print(f"  Captured:   {total:>14,.2f} {ccy_label}  ({coverage:.1f}%)")
+    print(f"\n  Total:      ${portfolio_total:,.2f} {ccy_label}")
+    print(f"  Captured:   ${total:,.2f} {ccy_label}  ({coverage:.1f}%)")
+    
     if coverage < 99:
-        print(f"  Untracked:  {portfolio_total - total:>14,.2f} {ccy_label}  ({100 - coverage:.1f}% — below data cutoff)")
+        uncovered = portfolio_total - total
+        uncovered_pct = 100 - coverage
+        print(f"  Untracked:  ${uncovered:,.2f} {ccy_label}  ({uncovered_pct:.1f}% — below data cutoff)")
+    
     print("=" * 62 + "\n")
 
 
@@ -279,7 +357,11 @@ if __name__ == "__main__":
     if not entries:
         print("No portfolio entered. Exiting.")
     else:
-        currencies_used = {ccy for _, ccy in entries.values()}
+        # Collect all currencies used
+        currencies_used = set()
+        for ticker in entries:
+            amount, ccy = entries[ticker]
+            currencies_used.add(ccy)
 
         if len(currencies_used) == 1:
             display_currency = currencies_used.pop()
@@ -290,10 +372,11 @@ if __name__ == "__main__":
                 choice = input("Display results in USD or CAD? ").strip().upper()
             display_currency = choice
 
-        portfolio = {
-            ticker: convert_amount(amount, ccy, display_currency)
-            for ticker, (amount, ccy) in entries.items()
-        }
+        # Convert all amounts to display currency
+        portfolio = {}
+        for ticker in entries:
+            amount, ccy = entries[ticker]
+            portfolio[ticker] = convert_amount(amount, ccy, display_currency)
 
         decomposed, unknown = decompose_portfolio(portfolio)
         sectors = breakdown_by_sector(decomposed)
