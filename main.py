@@ -1,7 +1,6 @@
 import json
 import sys
 from collections import defaultdict
-
 # Force UTF-8 output so bar chart characters render correctly on Windows
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -21,6 +20,10 @@ TICKER_ALIASES = {
     "QQQM": "QQQ",       # User shortcut to US QQQ
     "ITOT": "VTI",       # User shortcut to US VTI
     "XEQT": "VEQT.TO",   # Alternative name for VEQT
+    "XSP": "XSP.TO",     # Alternative name for XSP
+    "XSU": "XSU.TO",     # Alternative name for XSU
+    "XSP": "VFV.TO",     # User shortcut to VFV
+    "XSU": "VFV.TO",     # User shortcut to VFV
 }
 
 
