@@ -11,6 +11,7 @@
       "SCHD": "Top 25 holdings = ~80% of fund",
       "XLK_VGT": "Top 25 holdings = ~58-61% of fund",
       "XLF_XLV": "Top 25 holdings = ~55-58% of fund",
+      "TEC.TO": "Top 20 holdings = ~65% of fund",
       "XIU_XIC_VCN": "Top 25 holdings = ~46-50% of fund",
       "VDY": "Top 15 holdings = ~78% of fund",
       "IWM": "Top 10 holdings = ~6% of fund — NOT suitable for decomposition",
@@ -5529,6 +5530,114 @@
           "ticker": "COST",
           "name": "Costco Wholesale Corporation",
           "weight": 0.29
+        }
+      ]
+    },
+    "TEC.TO": {
+      "name": "TD Global Technology Leaders Index ETF",
+      "exchange": "TSX",
+      "currency": "CAD",
+      "description": "Tracks Solactive Global Technology Leaders Index (~100 holdings). Top 20 shown (~65% coverage). Source: TD Asset Management 2026.",
+      "holdings": [
+        {
+          "ticker": "NVDA",
+          "name": "NVIDIA Corp",
+          "weight": 12.74
+        },
+        {
+          "ticker": "AAPL",
+          "name": "Apple Inc",
+          "weight": 10.68
+        },
+        {
+          "ticker": "MSFT",
+          "name": "Microsoft Corp",
+          "weight": 8.18
+        },
+        {
+          "ticker": "AMZN",
+          "name": "Amazon.com Inc",
+          "weight": 6.92
+        },
+        {
+          "ticker": "GOOGL",
+          "name": "Alphabet Inc Class A",
+          "weight": 6.12
+        },
+        {
+          "ticker": "AVGO",
+          "name": "Broadcom Inc",
+          "weight": 5.31
+        },
+        {
+          "ticker": "GOOG",
+          "name": "Alphabet Inc Class C",
+          "weight": 5.26
+        },
+        {
+          "ticker": "META",
+          "name": "Meta Platforms Inc Class A",
+          "weight": 3.63
+        },
+        {
+          "ticker": "TSLA",
+          "name": "Tesla Inc",
+          "weight": 3.02
+        },
+        {
+          "ticker": "MU",
+          "name": "Micron Technology Inc",
+          "weight": 1.59
+        },
+        {
+          "ticker": "AMD",
+          "name": "Advanced Micro Devices Inc",
+          "weight": 1.57
+        },
+        {
+          "ticker": "V",
+          "name": "Visa Inc Class A",
+          "weight": 1.52
+        },
+        {
+          "ticker": "ASML",
+          "name": "ASML Holding NV",
+          "weight": 1.49
+        },
+        {
+          "ticker": "NFLX",
+          "name": "Netflix Inc",
+          "weight": 1.17
+        },
+        {
+          "ticker": "INTC",
+          "name": "Intel Corp",
+          "weight": 1.14
+        },
+        {
+          "ticker": "MA",
+          "name": "Mastercard Inc Class A",
+          "weight": 1.10
+        },
+        {
+          "ticker": "CSCO",
+          "name": "Cisco Systems Inc",
+          "weight": 0.99
+        },
+        {
+          "ticker": "LRCX",
+          "name": "Lam Research Corp",
+          "weight": 0.88
+        },
+        {
+          "ticker": "AMAT",
+          "name": "Applied Materials Inc",
+          "weight": 0.85
+        },
+        {
+          "ticker": "PLTR",
+          "name": "Palantir Technologies Inc Ordinary Shares - Class A",
+          "weight": 0.81
         }
       ]
     }
