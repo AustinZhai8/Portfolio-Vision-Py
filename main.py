@@ -4,7 +4,7 @@ from collections import defaultdict
 # Force UTF-8 output so bar chart characters render correctly on Windows
 sys.stdout.reconfigure(encoding="utf-8")
 
-# ── Load data ────────────────────────────────────────────────────────────────
+# Load the data
 
 with open("data/etf_data.json", "r") as f:
     DATA = json.load(f)
@@ -66,7 +66,7 @@ def convert_amount(amount, from_ccy, to_ccy):
         return amount / USDCAD
 
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
+# Functions for help
 
 def get_etf_holdings(etf_ticker):
     etf = ETF_DATA.get(resolve_ticker(etf_ticker))
@@ -312,7 +312,7 @@ def print_report(entries, portfolio, decomposed, sectors, countries, unknown, di
     print("=" * 62 + "\n")
 
 
-# ── Main ─────────────────────────────────────────────────────────────────────
+# Main program
 
 def get_portfolio_from_user():
     # Returns {ticker: (amount, currency)}
